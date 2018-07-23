@@ -6,7 +6,7 @@ description:
   The instances are created with Heat and then configured with Ansible
 
 parameters:
-  pool_https:
+  tower_pool_https:
     type: string
     description: The lbaas https pool
 
@@ -120,7 +120,7 @@ resources:
   pool_member_https:
     type: OS::Neutron::LBaaS::PoolMember
     properties:
-      pool: { get_param: pool_https }
+      pool: { get_param: tower_pool_https }
       address: { get_attr: [ host, first_address ]}
       protocol_port: { get_param: app_port_https }
       subnet: { get_param: service_subnet }

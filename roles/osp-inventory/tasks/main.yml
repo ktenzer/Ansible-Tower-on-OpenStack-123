@@ -1,0 +1,38 @@
+- name: Check whether the stack exists already
+  command: "openstack stack show {{ stack_name }}"
+  register: stack_check
+
+- name: Register stack output
+  command: >
+    openstack stack output show -f json -c output_value
+    {{ stack_name }} ip_address
+  register: stack_output_raw
+
+- name: print debug
+  debug:
+      msg: "{{ stack_output_raw.stdout }}"
+  when: debug == True
+
+- set_fact:
+    stack_output: "{{ (stack_output_raw.stdout|from_json).output_value }}"
+
+- name: Add the tower nodes to the inventory
+  add_host:
+    name: "{{ item.name }}"
+    groups: nodes,all
+    zone: "{{ domain_name }}"
+    domain_name: "{{ domain_name }}"
+    ansible_user: "{{ ssh_user }}"
+    ansible_ssh_host: "{{ item.address }}"
+  with_items: "{{ stack_output.nodes }}"
+
+- name: Wait 300 seconds for port 22 to become open and contain "OpenSSH"
+  wait_for:
+    port: 22
+    host: '{{ (stack_output.node0.address|default(ansible_host))|default(inventory_hostname) }}'
+    search_regex: OpenSSH
+    delay: 10
+
+- debug:
+    var: groups
+  when: debug == True

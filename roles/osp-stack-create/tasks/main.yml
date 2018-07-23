@@ -1,0 +1,24 @@
+- include_tasks: validate-parameters.yml
+
+- name: Check if {{ stack_name }} stack exists
+  command: "openstack stack show {{ stack_name }}"
+  ignore_errors: yes
+  register: stack_check
+
+- name: Create heat stack {{ stack_name }}
+  stack_create:
+    name: "{{ stack_name }}"
+    template: "{{ heat_template_path }}"
+    parameters:
+      domain_name: "{{ domain_name }}"
+      external_network: "{{ external_network }}"
+      service_network: "{{ service_network }}"
+      service_subnet: "{{ service_subnet }}"
+      ssh_key_name: "{{ ssh_key_name }}"
+      dns_forwarders: "{{ dns_forwarders }}"
+      image: "{{ image }}"
+      node_flavor: "{{ node_flavor }}"
+      node_count: "{{ node_count }}"
+      node_server_group_policies: "{{ node_server_group_policies }}"
+  register: stack_output
+  when: stack_check.rc != 0

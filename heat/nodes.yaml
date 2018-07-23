@@ -6,7 +6,7 @@ description:
   The instances are created with Heat and then configured with Ansible
 
 parameters:
-  pool_https:
+  tower_pool_https:
     type: string
     description: The lbaas https pool
 
@@ -102,9 +102,9 @@ resources:
       resource_def:
         type: node.yaml
         properties:
-          pool_https: {get_param: pool_https}
+          tower_pool_https: {get_param: tower_pool_https}
           image: {get_param: image}
-          flavor: {get_param: infra_flavor}
+          flavor: {get_param: node_flavor}
           external_network: {get_param: external_network}
           service_network: {get_param: service_network}
           service_subnet: {get_param: service_subnet}

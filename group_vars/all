@@ -1,0 +1,9 @@
+packages:
+  - screen
+  - yum-utils
+  - vim
+  - bash-completion
+  - sos
+repos:
+  - rhel-7-server-rpms
+  - rhel-7-server-extras-rpms

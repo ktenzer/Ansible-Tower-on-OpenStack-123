@@ -7,7 +7,7 @@ description:
   The instances are created with Heat and then configured with Ansible
 
 parameters:
-  tower_pool:
+  tower_pool_https:
     type: string
     description: The tower lbaas pool
 
@@ -21,7 +21,7 @@ parameters:
     description: >
       The default prefix for towerdb hostname
     type: string
-    default: "bastion"
+    default: "towerdb"
 
   node_hostname_prefix:
     description: >
@@ -103,23 +103,10 @@ parameters:
 
 resources:
 
-  towerdb:
-    type: towerdb.yaml
-    properties:
-      image: {get_param: image}
-      towerdb_flavor: {get_param: towerdb_flavor}
-      external_network: {get_param: external_network}
-      service_network: {get_param: service_network}
-      service_subnet: {get_param: service_subnet}
-      security_group: {get_resource: towerdb_security_group}
-      hostname: {get_param: towerdb_hostname}
-      domain_name: {get_param: domain_name}
-      ssh_user: {get_param: ssh_user}
-      ssh_key_name: {get_param: ssh_key_name}
-
   nodes:
     type: nodes.yaml
     properties:
+      tower_pool_https: {get_param: tower_pool_https}
       node_count: {get_param: node_count}
       image: {get_param: image}
       node_flavor: {get_param: node_flavor}
@@ -138,15 +125,33 @@ resources:
     properties:
       rules:
       - protocol: icmp
-      - protocol: tcp
+      - direction: ingress
+        protocol: tcp
         port_range_min: 22
         port_range_max: 22
-      - protocol: tcp
-        port_range_min: 53
-        port_range_max: 53
-      - protocol: udp
-        port_range_min: 53
-        port_range_max: 53
+      - direction: ingress
+        protocol: tcp
+        port_range_min: 80
+        port_range_max: 80
+        protocol: tcp
+        port_range_min: 443
+        port_range_max: 443
+      - direction: ingress
+        protocol: tcp
+        port_range_min: 4369
+        port_range_max: 4369
+      - direction: ingress
+        protocol: tcp
+        port_range_min: 25672
+        port_range_max: 25672
+      - direction: ingress
+        protocol: tcp
+        port_range_min: 15672
+        port_range_max: 15672
+      - direction: ingress
+        protocol: tcp
+        port_range_min: 5432
+        port_range_max: 5432
 
   node_security_group:
     type: OS::Neutron::SecurityGroup
@@ -159,69 +164,25 @@ resources:
         port_range_max: 22
       - direction: ingress
         protocol: tcp
-        port_range_min: 10250
-        port_range_max: 10250
-      - direction: ingress
-        protocol: udp
-        port_range_min: 4789
-        port_range_max: 4789
+        port_range_min: 80
+        port_range_max: 80
+        protocol: tcp
+        port_range_min: 443
+        port_range_max: 443
       - direction: ingress
         protocol: tcp
-        port_range_min: 53
-        port_range_max: 53
-      - direction: ingress
-        protocol: udp
-        port_range_min: 53
-        port_range_max: 53
-      # NFS Ports
+        port_range_min: 4369
+        port_range_max: 4369
       - direction: ingress
         protocol: tcp
-        port_range_min: 111
-        port_range_max: 111
-      - direction: ingress
-        protocol: udp
-        port_range_min: 111
-        port_range_max: 111
+        port_range_min: 25672
+        port_range_max: 25672
       - direction: ingress
         protocol: tcp
-        port_range_min: 892
-        port_range_max: 892
-      - direction: ingress
-        protocol: udp
-        port_range_min: 892
-        port_range_max: 892
-      - direction: ingress
-        protocol: tcp
-        port_range_min: 875
-        port_range_max: 875
-      - direction: ingress
-        protocol: udp
-        port_range_min: 875
-        port_range_max: 875
-      - direction: ingress
-        protocol: tcp
-        port_range_min: 662
-        port_range_max: 662
-      - direction: ingress
-        protocol: udp
-        port_range_min: 662
-        port_range_max: 662
-      - direction: ingress
-        protocol: tcp
-        port_range_min: 2049
-        port_range_max: 2049
-      - direction: ingress
-        protocol: tcp
-        port_range_min: 32803
-        port_range_max: 32803
-      - direction: ingress
-        protocol: udp
-        port_range_min: 32769
-        port_range_max: 32769
+        port_range_min: 15672
+        port_range_max: 15672
 
 outputs:
-  towerdb_ip_address:
-    value: {get_attr: [towerdb, ip_address]}
   node_entries:
     value: {get_attr: [nodes, entries]}
 

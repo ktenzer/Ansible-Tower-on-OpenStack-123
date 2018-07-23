@@ -60,7 +60,7 @@ resources:
       port_id: { get_attr: [loadbalancer, vip_port_id ]}
 
 outputs:
-  tower_pool:
+  tower_pool_https:
     description: The load balancer pool
     value: {get_resource: pool_https}
   lburl:

@@ -1,0 +1,5 @@
+- name: Validate nodes
+  assert:
+    that:
+      - (node_count >= 1 ) 
+    msg: "Node count {{ node_count }} must be >= 1"

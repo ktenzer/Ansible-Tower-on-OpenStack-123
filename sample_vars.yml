@@ -1,0 +1,33 @@
+---
+### OpenStack Setting ###
+openstack_user: admin
+openstack_passwd: <password>
+openstack_ip: <ip address>
+openstack_project: <project>
+domain_name: ocp3.lab
+dns_forwarders: [213.133.98.98, 213.133.98.99]
+external_network: public
+service_network: mgmt
+service_subnet: mgmt_subnet
+image: rhel75
+ssh_user: cloud-user
+ssh_key_path: /root/admin.pem
+ssh_key_name: admin
+stack_name: tower
+openstack_version: 13
+heat_template_path: /root/ansible-tower-on-openstack-123/heat/tower.yaml
+
+### Red Hat Subscription ###
+rhn_username: <user>
+rhn_password: <password>
+rhn_pool: <pool>
+
+### Tower Instance Count ###
+node_count: 1
+
+### OpenStack Instance Group Policies ###
+### Set to 'affinity' if only one compute node ###
+node_server_group_policies: "['anti-affinity']"
+
+### OpenStack Instance Flavors ###
+node_flavor: tower.node
