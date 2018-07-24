@@ -1,5 +1,3 @@
-- include_tasks: validate-parameters.yml
-
 - name: Check if {{ stack_name }} stack exists
   command: "openstack stack show {{ stack_name }}"
   ignore_errors: yes
@@ -17,6 +15,7 @@
       ssh_key_name: "{{ ssh_key_name }}"
       dns_forwarders: "{{ dns_forwarders }}"
       image: "{{ image }}"
+      towerdb_flavor: "{{ towerdb_flavor }}"
       node_flavor: "{{ node_flavor }}"
       node_count: "{{ node_count }}"
       node_server_group_policies: "{{ node_server_group_policies }}"

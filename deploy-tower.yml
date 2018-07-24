@@ -18,3 +18,24 @@
       name: osp-stack-create
   - import_role:
       name: osp-inventory
+    tags: ['inv']
+
+- name: Prepare Ansible Tower Nodes
+  hosts: cluster
+  become: true
+  gather_facts: true
+
+  tasks:
+  - import_role:
+      name: tower-prep
+    tags: ['prep']
+
+- name: Install Ansible Tower
+  hosts: tower
+  become: true
+  gather_facts: true
+
+  tasks:
+  - import_role:
+      name: tower-install
+    tags: ['install']

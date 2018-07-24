@@ -1,4 +1,6 @@
 packages:
+  - ansible
+  - lvm2
   - screen
   - yum-utils
   - vim

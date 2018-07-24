@@ -1,4 +1,10 @@
 ---
+### General Settings ###
+tower_db_user: tower
+tower_db_passwd: <password>
+tower_admin_passwd: <password>
+debug: True
+
 ### OpenStack Setting ###
 openstack_user: admin
 openstack_passwd: <password>
@@ -15,7 +21,7 @@ ssh_key_path: /root/admin.pem
 ssh_key_name: admin
 stack_name: tower
 openstack_version: 13
-heat_template_path: /root/ansible-tower-on-openstack-123/heat/tower.yaml
+heat_template_path: /root/ansible-tower-on-openstack-123/heat/tower_single_node.yaml
 
 ### Red Hat Subscription ###
 rhn_username: <user>
@@ -30,4 +36,5 @@ node_count: 1
 node_server_group_policies: "['anti-affinity']"
 
 ### OpenStack Instance Flavors ###
+towerdb_flavor: tower.db
 node_flavor: tower.node

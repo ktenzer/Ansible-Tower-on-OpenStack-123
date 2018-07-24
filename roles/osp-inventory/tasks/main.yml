@@ -16,20 +16,29 @@
 - set_fact:
     stack_output: "{{ (stack_output_raw.stdout|from_json).output_value }}"
 
-- name: Add the tower nodes to the inventory
+- name: Add the towerdb to the inventory
   add_host:
-    name: "{{ item.name }}"
-    groups: nodes,all
+    name: "{{ stack_output.towerdb.name }}"
+    groups: tower,cluster,all
     zone: "{{ domain_name }}"
     domain_name: "{{ domain_name }}"
     ansible_user: "{{ ssh_user }}"
-    ansible_ssh_host: "{{ item.address }}"
-  with_items: "{{ stack_output.nodes }}"
+    ansible_ssh_host: "{{ stack_output.towerdb.address }}"
+
+- name: Add the tower nodes to the inventory
+  add_host:
+    name: "{{ item.name | default('',true) }}"
+    groups: nodes,cluster,all
+    zone: "{{ domain_name }}"
+    domain_name: "{{ domain_name }}"
+    ansible_user: "{{ ssh_user }}"
+    ansible_ssh_host: "{{ item.address | default('',true) }}"
+  with_items: stack_output.nodes | default('',true)
 
 - name: Wait 300 seconds for port 22 to become open and contain "OpenSSH"
   wait_for:
     port: 22
-    host: '{{ (stack_output.node0.address|default(ansible_host))|default(inventory_hostname) }}'
+    host: '{{ (stack_output.towerdb.address|default(ansible_host))|default(inventory_hostname) }}'
     search_regex: OpenSSH
     delay: 10
 

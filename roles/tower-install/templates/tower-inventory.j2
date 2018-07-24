@@ -1,0 +1,25 @@
+[tower]
+
+[database]
+tower0.{{ domain_name }}
+
+[all:vars]
+ansible_become=true
+
+admin_password='{{ tower_admin_passwd }}'
+
+pg_host='tower0.{{ domain_name }}'
+pg_port='5432'
+
+pg_database='tower'
+pg_username='{{ tower_db_user }}'
+pg_password='{{ tower_db_passwd }}'
+
+rabbitmq_port=5672
+rabbitmq_vhost=tower
+rabbitmq_username=tower
+rabbitmq_password=tower
+rabbitmq_cookie=rabbitmqcookie
+
+# Needs to be true for fqdns and ip addresses
+rabbitmq_use_long_name=true

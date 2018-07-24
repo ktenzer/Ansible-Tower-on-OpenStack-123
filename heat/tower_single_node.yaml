@@ -103,19 +103,12 @@ parameters:
 
 resources:
 
-  lbaas:
-    type: lbaas.yaml
-    properties:
-      external_network: {get_param: external_network}
-      service_subnet: {get_param: service_subnet}
-    
   hosts:
-    type: hosts.yaml
+    type: hosts_single_node.yaml
     properties:
       external_network: {get_param: external_network}
       service_network: {get_param: service_network}
       service_subnet: {get_param: service_subnet}
-      tower_pool_https: {get_attr: [lbaas, tower_pool_https]}
       image: {get_param: image}
       towerdb_flavor: {get_param: towerdb_flavor}
       node_flavor: {get_param: node_flavor}
@@ -134,7 +127,3 @@ outputs:
       towerdb:
         name: {get_param: towerdb_hostname}
         address: {get_attr: [hosts, towerdb_ip_address]}
-      nodes: {get_attr: [hosts, node_entries]}
-      lb:
-        name: lb_tower
-        address: {get_attr: [lbaas, lb_floatingip]}

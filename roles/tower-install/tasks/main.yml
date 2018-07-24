@@ -1,0 +1,83 @@
+- name: Setup OpenShift inventory file
+  template:
+    src: templates/tower-inventory.j2
+    dest: /home/{{ ssh_user }}/tower-inventory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Configure nodes dynamically
+  lineinfile: dest=/home/{{ ssh_user }}/tower-inventory
+    line="{{ item }}.{{ domain_name }}"
+    insertafter="^#?\[tower\]"
+  with_items: "{{ groups['nodes'] }}"
+
+- name: Create partition for Ansible Tower Database
+  parted:
+    device: /dev/vdb
+    number: 1
+    flags: [ lvm ]
+    state: present
+    part_end: 99GiB
+
+- name: Create a volume group for Ansible Tower Database
+  lvg:
+    vg: vg_postgres
+    pvs: /dev/vdb1
+    pesize: 32
+
+- name: Create a logical volume for Ansible Tower Database
+  lvol:
+    vg: vg_postgres
+    lv: postgress_disk1
+    size: 98g
+
+- name: Create a XFS filesystem for Ansible Tower Database
+  filesystem:
+    fstype: xfs
+    dev: /dev/vg_postgres/postgress_disk1
+
+- name: Mount Ansible Tower Database filesystem
+  mount:
+    path: /var/lib/postgresql
+    src: /dev/vg_postgres/psotgres_disk1
+    fstype: xfs
+    state: present
+    boot: yes
+
+- name: Check if Ansible Tower install bundle exists
+  stat:
+    path: /home/{{ ssh_user }}/ansible-tower-setup-bundle-latest.el7.tar
+  register: tower_bundle
+
+- name: Download Ansible Tower Bundle
+  get_url:
+    url: https://releases.ansible.com/ansible-tower/setup-bundle/ansible-tower-setup-bundle-latest.el7.tar.gz
+    dest: /home/{{ ssh_user }}/ansible-tower-setup-bundle-latest.el7.tar.gz
+    force_basic_auth: yes
+    validate_certs: no
+
+- name: Extract Ansible Tower tarball
+  unarchive:
+    src: /home/{{ ssh_user }}/ansible-tower-setup-bundle-latest.el7.tar.gz
+    dest: /home/{{ ssh_user }}
+    remote_src: yes
+  when: tower_bundle.stat.exists == False
+
+- name: Find Ansible Tower Install Directory
+  find:
+    paths: /home/{{ ssh_user }}
+    patterns: "*ansible-tower-setup*"
+    file_type: directory
+  register: dir_output
+
+- name: Store directory as fact
+  set_fact:
+    tower_install_dir: "{{ dir_output.path }}"
+
+- debug:
+    msg: "Ansible Install Directory: {{ tower_install_dir }}"
+  when: debug == True
+
+#- name: Install Ansible Tower
+ # shell: {{ tower_install_dir }}/setup.sh -i /home/{{ ssh_user }}/tower-inventory
