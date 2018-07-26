@@ -8,6 +8,7 @@
     name: "{{ stack_name }}"
     template: "{{ heat_template_path }}"
     parameters:
+      towerdb_hostname: "{{ towerdb_hostname }}"
       domain_name: "{{ domain_name }}"
       external_network: "{{ external_network }}"
       service_network: "{{ service_network }}"

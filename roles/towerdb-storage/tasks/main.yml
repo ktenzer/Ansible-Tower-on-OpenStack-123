@@ -1,0 +1,38 @@
+- name: Create directory for Ansible Tower Database
+  file:
+    path: /var/lib/postgresql
+    state: directory
+    mode: 0755
+
+- name: Create partition for Ansible Tower Database
+  parted:
+    device: /dev/vdb
+    number: 1
+    flags: [ lvm ]
+    state: present
+    part_end: 99GiB
+
+- name: Create a volume group for Ansible Tower Database
+  lvg:
+    vg: vg_postgresql
+    pvs: /dev/vdb1
+    pesize: 32
+
+- name: Create a logical volume for Ansible Tower Database
+  lvol:
+    vg: vg_postgresql
+    lv: postgresql_disk1
+    size: 98g
+
+- name: Create a XFS filesystem for Ansible Tower Database
+  filesystem:
+    fstype: xfs
+    dev: /dev/vg_postgresql/postgresql_disk1
+
+- name: Mount Ansible Tower Database filesystem
+  mount:
+    path: /var/lib/postgresql
+    src: /dev/vg_postgresql/postgresql_disk1
+    fstype: xfs
+    state: mounted
+    boot: yes

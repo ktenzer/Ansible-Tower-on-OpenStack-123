@@ -59,3 +59,22 @@
   retries: 5
   delay: 5
   with_items: "{{packages}}"
+
+- name: Setup ssh authentication for {{ ssh_user }}
+  lineinfile:
+    dest: /etc/sudoers.d/{{ ssh_user }}
+    line: "{{ ssh_user }} ALL=(ALL) NOPASSWD: ALL"
+    insertbefore: BOF
+    create: yes
+    state: present
+
+- name: Get SSH Key for user {{ ssh_user }}
+  fetch:
+    src: /home/{{ ssh_user }}/.ssh/id_rsa.pub
+    dest: ~/
+
+- name: Add key to authorized keys for user {{ ssh_user }}
+  authorized_key:
+    user: "{{ ssh_user }}"
+    state: present
+    key: "{{ lookup('file', '~/{{ inventory_hostname }}/home/{{ ssh_user }}/.ssh/id_rsa.pub') }}"

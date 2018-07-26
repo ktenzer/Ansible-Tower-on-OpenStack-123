@@ -1,5 +1,6 @@
 ---
 ### General Settings ###
+towerdb_hostname: towerdb
 tower_db_user: tower
 tower_db_passwd: <password>
 tower_admin_passwd: <password>

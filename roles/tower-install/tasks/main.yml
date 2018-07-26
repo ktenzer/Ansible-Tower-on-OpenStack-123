@@ -1,3 +1,8 @@
+- name: Setup ssh authorization for user {{ ss_user }} to Tower nodes
+  shell: ssh-copy-id {{ hostvars[item]['ansible_eth0']['ipv4']['address'] }} 
+  with_items: "{{ groups['nodes'] }}"
+  when: node_count > 0
+
 - name: Setup OpenShift inventory file
   template:
     src: templates/tower-inventory.j2
@@ -7,43 +12,60 @@
     mode: 0755
 
 - name: Configure nodes dynamically
-  lineinfile: dest=/home/{{ ssh_user }}/tower-inventory
-    line="{{ item }}.{{ domain_name }}"
-    insertafter="^#?\[tower\]"
+  lineinfile: 
+    dest: /home/{{ ssh_user }}/tower-inventory
+    line: "{{ item }}.{{ domain_name }}"
+    insertafter: '^#?\[tower\]'
   with_items: "{{ groups['nodes'] }}"
+  when: node_count != 0
 
-- name: Create partition for Ansible Tower Database
-  parted:
-    device: /dev/vdb
-    number: 1
-    flags: [ lvm ]
-    state: present
-    part_end: 99GiB
+- name: Configure database node
+  lineinfile: 
+    dest: /home/{{ ssh_user }}/tower-inventory
+    line: "{{ towerdb_hostname }}.{{ domain_name }}"
+    insertafter: '^#?\[database\]'
+  when: node_count != 0
 
-- name: Create a volume group for Ansible Tower Database
-  lvg:
-    vg: vg_postgres
-    pvs: /dev/vdb1
-    pesize: 32
+- name: Configure database connection
+  lineinfile: 
+    dest: /home/{{ ssh_user }}/tower-inventory
+    line: "{{ item }}"
+    insertafter: '^#?admin_password'
+  with_items:
+    - pg_host='{{ towerdb_hostname }}.{{ domain_name }}'
+    - pg_port='5432'
+  when: node_count != 0
 
-- name: Create a logical volume for Ansible Tower Database
-  lvol:
-    vg: vg_postgres
-    lv: postgress_disk1
-    size: 98g
+- name: Configure to use short hostname for rabbitmq
+  lineinfile: 
+    dest: /home/{{ ssh_user }}/tower-inventory
+    line: 'rabbitmq_use_long_name=true'
+    insertafter: '^#?rabbitmq_cookie'
+  when: node_count != 0
 
-- name: Create a XFS filesystem for Ansible Tower Database
-  filesystem:
-    fstype: xfs
-    dev: /dev/vg_postgres/postgress_disk1
+- name: Configure single node
+  lineinfile: 
+    dest: /home/{{ ssh_user }}/tower-inventory
+    line: "localhost ansible_connection=local"
+    insertafter: '^#?\[tower\]'
+  when: node_count == 0
 
-- name: Mount Ansible Tower Database filesystem
-  mount:
-    path: /var/lib/postgresql
-    src: /dev/vg_postgres/psotgres_disk1
-    fstype: xfs
-    state: present
-    boot: yes
+- name: Configure single node database connection
+  lineinfile: 
+    dest: /home/{{ ssh_user }}/tower-inventory
+    line: "{{ item }}"
+    insertafter: '^#?admin_password'
+  with_items:
+    - pg_host=''
+    - pg_port=''
+  when: node_count == 0
+
+- name: Configure to use short hostname for rabbitmq
+  lineinfile: 
+    dest: /home/{{ ssh_user }}/tower-inventory
+    line: 'rabbitmq_use_long_name=false'
+    insertafter: '^#?rabbitmq_cookie'
+  when: node_count == 0
 
 - name: Check if Ansible Tower install bundle exists
   stat:
@@ -71,13 +93,10 @@
     file_type: directory
   register: dir_output
 
-- name: Store directory as fact
-  set_fact:
-    tower_install_dir: "{{ dir_output.path }}"
-
 - debug:
-    msg: "Ansible Install Directory: {{ tower_install_dir }}"
+    msg: "Ansible Install Directory: {{ dir_output.files }}"
   when: debug == True
 
-#- name: Install Ansible Tower
- # shell: {{ tower_install_dir }}/setup.sh -i /home/{{ ssh_user }}/tower-inventory
+- name: Install Ansible Tower
+  shell: export ANSIBLE_HOST_KEY_CHECKING=False && cd {{ item.path }} && ./setup.sh -i /home/{{ ssh_user }}/tower-inventory
+  with_items: "{{ dir_output.files }}"

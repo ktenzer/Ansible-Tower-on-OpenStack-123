@@ -1,0 +1,10 @@
+- name: Check for ssh key
+  shell: ls /home/{{ ssh_user }}/.ssh/id_rsa
+  register: ls_output
+  ignore_errors: yes
+  
+
+- name: Setup ssh key for {{ ssh_user }}
+  shell: ssh-keygen -q -t rsa -f /home/{{ ssh_user }}/.ssh/id_rsa -C "" -N ""
+  become_user: "{{ ssh_user }}"
+  when: ls_output.rc != 0
