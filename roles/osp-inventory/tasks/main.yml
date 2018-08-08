@@ -34,6 +34,8 @@
     ansible_user: "{{ ssh_user }}"
     ansible_ssh_host: "{{ item.address | default('',true) }}"
   with_items: stack_output.nodes | default('',true)
+  when: node_count > 0
+
 
 - name: Wait 300 seconds for port 22 to become open and contain "OpenSSH"
   wait_for:
