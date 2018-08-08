@@ -30,7 +30,8 @@ rhn_password: <password>
 rhn_pool: <pool>
 
 ### Tower Instance Count ###
-node_count: 1
+### Set to 0 for all-in-one ###
+node_count: 0
 
 ### OpenStack Instance Group Policies ###
 ### Set to 'affinity' if only one compute node ###
