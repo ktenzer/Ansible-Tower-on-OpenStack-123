@@ -1,0 +1,13 @@
+- name: All-in-one deployment check
+  assert:
+    that:
+      - node_count == 0
+    msg: "node_count must be 0 for all in one configuration"
+  when: ('tower_single_node.yaml' in heat_template_path)
+
+- name: Multi node deployment check
+  assert:
+    that:
+      - node_count > 0
+    msg: "node_count must be greater than 0 for multi-node configuration"
+  when: ('tower.yaml' in heat_template_path)

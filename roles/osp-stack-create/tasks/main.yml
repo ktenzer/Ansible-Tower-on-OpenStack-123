@@ -1,3 +1,5 @@
+- include_tasks: validate-parameters.yml
+
 - name: Check if {{ stack_name }} stack exists
   command: "openstack stack show {{ stack_name }}"
   ignore_errors: yes
