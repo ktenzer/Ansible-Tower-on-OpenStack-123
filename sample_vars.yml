@@ -10,6 +10,7 @@ debug: True
 openstack_user: admin
 openstack_passwd: <password>
 openstack_ip: <ip address>
+openstack_auth_url: http://<openstack ip>:5000/v3
 openstack_project: <project>
 domain_name: ocp3.lab
 dns_forwarders: [213.133.98.98, 213.133.98.99]
