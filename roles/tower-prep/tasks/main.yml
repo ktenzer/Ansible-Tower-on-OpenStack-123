@@ -47,14 +47,14 @@
     subscription-manager repos --disable=*
   retries: 5
   delay: 5
-  when: subscribe.changed
+  when: subscribe_activation_key.changed or subscribe_user.changed
 
 - name: Enable correct repos
   command: "subscription-manager repos --enable={{item}}"
-  when: subscribe.changed
   retries: 5
   delay: 5
   with_items: "{{repos}}"
+  when: subscribe_activation_key.changed or subscribe_user.changed
 
 - name: Upgrade packages
   yum:
